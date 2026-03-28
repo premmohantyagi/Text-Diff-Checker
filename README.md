@@ -31,12 +31,15 @@ Text-Diff-Checker/
 └── README.md
 ```
 
-## Getting Started
+## Installation
 
-1. Serve the project from any local web server (e.g. WAMP, XAMPP, Live Server).
-2. Open `http://localhost/Text-Diff-Checker/` in your browser.
-3. Paste text into the **Original** and **Modified** panels.
-4. Click **Compare** or press `Ctrl+Enter` to see the diff.
+Clone or download this repository into your web server's root directory:
+
+```bash
+git clone https://github.com/premmohantyagi/Text-Diff-Checker.git
+```
+
+Open `http://localhost/Text-Diff-Checker/` in your browser.
 
 ## License
 
