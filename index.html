@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Diff Checker - Compare Text Differences</title>
+    <meta name="description" content="Compare two blocks of text and see line-by-line differences with word-level highlighting.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 antialiased min-h-screen flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="w-8 h-8 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span class="text-xl font-bold tracking-tight">Text Diff Checker</span>
+            </div>
+            <button id="theme-toggle" class="w-9 h-9 rounded-full flex items-center justify-center border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Toggle theme">
+                <svg class="w-5 h-5 hidden dark:block" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
+                <svg class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl lg:text-4xl font-bold tracking-tight mb-2">Text Diff Checker</h1>
+            <p class="text-gray-600 dark:text-gray-400 text-lg">Compare two blocks of text and see line-by-line differences.</p>
+        </div>
+
+        <!-- Input Textareas -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div>
+                <label for="diff-original" class="block text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">Original</label>
+                <textarea id="diff-original" rows="14" class="w-full font-mono text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none resize-y transition-colors placeholder-gray-400 dark:placeholder-gray-600" placeholder="Paste original text here..."></textarea>
+            </div>
+            <div>
+                <label for="diff-modified" class="block text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">Modified</label>
+                <textarea id="diff-modified" rows="14" class="w-full font-mono text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none resize-y transition-colors placeholder-gray-400 dark:placeholder-gray-600" placeholder="Paste modified text here..."></textarea>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+            <button id="btn-compare" class="inline-flex items-center gap-2 px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-sm transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+                Compare
+            </button>
+            <button id="btn-swap" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                Swap
+            </button>
+            <button id="btn-clear" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl shadow-sm hover:bg-red-50 hover:text-red-600 hover:border-red-300 dark:hover:bg-red-950 dark:hover:text-red-400 dark:hover:border-red-800 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                Clear
+            </button>
+            <span id="diff-stats" class="ml-auto text-sm font-medium text-gray-600 dark:text-gray-400"></span>
+        </div>
+
+        <!-- Placeholder -->
+        <div id="diff-placeholder" class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl py-16 flex flex-col items-center justify-center text-center">
+            <svg class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+            </svg>
+            <p class="text-gray-500 dark:text-gray-500 text-lg mb-1">Paste text in both panels and click Compare</p>
+            <p class="text-gray-400 dark:text-gray-600 text-sm">or press <kbd class="px-2 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-xs font-mono">Ctrl+Enter</kbd></p>
+        </div>
+
+        <!-- Diff Output -->
+        <div id="diff-output-container" class="hidden">
+            <!-- Header Bar -->
+            <div class="flex items-center justify-between bg-gray-100 dark:bg-gray-800 rounded-t-xl px-4 py-3 border border-b-0 border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-4 text-sm font-medium">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-sm bg-red-400"></span>
+                        <span id="removal-count" class="text-red-700 dark:text-red-400">0 removed</span>
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-sm bg-green-400"></span>
+                        <span id="addition-count" class="text-green-700 dark:text-green-400">0 added</span>
+                    </span>
+                </div>
+                <button id="btn-copy-diff" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    Copy
+                </button>
+            </div>
+
+            <!-- Two-panel diff -->
+            <div class="grid grid-cols-2 border border-gray-200 dark:border-gray-700 rounded-b-xl overflow-hidden">
+                <!-- Left Panel -->
+                <div class="border-r border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Original</span>
+                        <span id="left-line-count" class="text-xs text-gray-400 dark:text-gray-500"></span>
+                    </div>
+                    <div id="diff-left" class="diff-panel overflow-auto font-mono text-sm leading-6 max-h-[600px]"></div>
+                </div>
+                <!-- Right Panel -->
+                <div>
+                    <div class="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Modified</span>
+                        <span id="right-line-count" class="text-xs text-gray-400 dark:text-gray-500"></span>
+                    </div>
+                    <div id="diff-right" class="diff-panel overflow-auto font-mono text-sm leading-6 max-h-[600px]"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a] mt-12">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+            &copy; 2026 Text Diff Checker. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 hidden transform transition-all duration-300 translate-y-4 opacity-0">
+        <div class="px-4 py-3 rounded-xl shadow-lg text-white text-sm font-medium"></div>
+    </div>
+
+    <script src="diff.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
